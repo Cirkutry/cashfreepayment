@@ -16,7 +16,6 @@ class CashfreePaymentServiceProvider extends BasePluginServiceProvider
     {
         $this->loadViews();
         $this->loadTranslations();
-        $this->loadRoutes();
         
         payment_manager()->registerPaymentMethod('cashfree', CashfreePaymentMethod::class);
     }
