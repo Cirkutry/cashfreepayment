@@ -255,17 +255,9 @@ class CashfreePaymentMethod extends PaymentMethod
         return asset('plugins/cashfreepayment/img/logo.png');
     }
 
-	public function view()
-	{
-		// Get all available currencies
-		$currencies = [
-			'USD' => 'US Dollar',
-			'EUR' => 'Euro',
-			'GBP' => 'British Pound',
-			'INR' => 'Indian Rupee',
-			// Add other currencies as needed
-		];
-		
-		return view('cashfreepayment::admin.index', ['currencies' => $currencies]);
-	}
+
+    public function view()
+    {
+        return 'cashfreepayment::admin.index';
+    }
 }
