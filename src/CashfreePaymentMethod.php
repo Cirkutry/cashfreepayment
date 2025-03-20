@@ -45,7 +45,7 @@ class CashfreePaymentMethod extends PaymentMethod
                 'customer_phone' => $user->phone ?? '9999999999', // Default if not available
             ],
             'order_meta' => [
-                'return_url' => route('shop.payments.success', ['gateway' => $this->id, 'payment_id' => $payment->id]) . '?order_id={order_id}&order_token={order_token}',
+                'return_url' => route('shop.payments.success', ['gateway' => $this->id, 'payment_id' => $payment->id]),
                 'notify_url' => route('shop.payments.notification', ['gateway' => $this->id]),
             ],
             'order_note' => $this->getPurchaseDescription($payment->id),
@@ -106,9 +106,13 @@ class CashfreePaymentMethod extends PaymentMethod
     public function success(Request $request)
     {
         $orderId = $request->input('order_id');
-        $orderToken = $request->input('order_token');
+        $paymentId = $request->input('payment_id');
+        $payment = Payment::findOrFail($paymentId);
         
-        if (!$orderId || !$orderToken) {
+        // Get the order ID from the payment record
+        $orderId = $payment->transaction_id;
+    
+        if (!$orderId) {
             return redirect()->route('shop.cart.index')->with('error', trans('shop::messages.payment.error'));
         }
         
