@@ -1,0 +1,10 @@
+{
+    "name": "azuriom/cashfreepayment",
+    "description": "Cashfree UPI payment gateway for Azuriom Shop",
+    "type": "azuriom-plugin",
+    "autoload": {
+        "psr-4": {
+            "Azuriom\\Plugin\\CashfreePayment\\": "src/"
+        }
+    }
+}
