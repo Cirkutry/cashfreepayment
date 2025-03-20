@@ -6,17 +6,10 @@
     <div class="card shadow mb-4">
         <div class="card-body">
             <form action="{{ route('admin.settings.update', 'payments') }}" method="POST">
-            <form action="{{ route('admin.settings.update', 'payments') }}" method="POST">
                 @csrf
 
-                <div class="row g-3">
-                    <div class="mb-3 col-md-6">
-                        <label class="form-label" for="currencySelect">{{ trans('shop::messages.fields.currency') }}</label>
-                        <select class="form-select @error('currency') is-invalid @enderror" id="currencySelect" name="currency">
-                            <option value="USD" @selected('USD' === ($gateway->data['currency'] ?? setting('shop.currency', 'USD')))>USD - US Dollar</option>
-                            <!-- Add other currencies as needed -->
-                        </select>
-                    </div>
+                <div class="alert alert-info">
+                    {{ trans('cashfreepayment::messages.info') }}
                 </div>
 
                 <h3>Cashfree API Credentials</h3>
