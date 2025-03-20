@@ -6,17 +6,15 @@
     <div class="card shadow mb-4">
         <div class="card-body">
             <form action="{{ route('admin.settings.update', 'payments') }}" method="POST">
+            <form action="{{ route('admin.settings.update', 'payments') }}" method="POST">
                 @csrf
 
                 <div class="row g-3">
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="currencySelect">{{ trans('shop::messages.fields.currency') }}</label>
                         <select class="form-select @error('currency') is-invalid @enderror" id="currencySelect" name="currency">
-                            @foreach($currencies as $code => $currency)
-                                <option value="{{ $code }}" @selected($code === ($gateway->data['currency'] ?? setting('shop.currency', 'USD')))>
-                                    {{ $code }} - {{ $currency }}
-                                </option>
-                            @endforeach
+                            <option value="USD" @selected('USD' === ($gateway->data['currency'] ?? setting('shop.currency', 'USD')))>USD - US Dollar</option>
+                            <!-- Add other currencies as needed -->
                         </select>
                     </div>
                 </div>
