@@ -30,6 +30,18 @@
                     @enderror
                 </div>
 
+                <h3>Exchange Rate API</h3>
+
+                <div class="mb-3">
+                    <label for="exchange-rate-api-key" class="form-label">Exchange Rate API Key</label>
+                    <input type="password" class="form-control @error('exchange-rate-api-key') is-invalid @enderror"
+                           id="exchange-rate-api-key" name="exchange-rate-api-key"
+                           value="{{ old('exchange-rate-api-key', $gateway->data['exchange-rate-api-key'] ?? '') }}">
+                    @error('exchange-rate-api-key')
+                    <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                    @enderror
+                </div>
+
                 <button type="submit" class="btn btn-primary">
                     {{ trans('messages.actions.save') }}
                 </button>
