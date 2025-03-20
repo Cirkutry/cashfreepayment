@@ -6,6 +6,7 @@ use Azuriom\Plugin\Shop\Cart\Cart;
 use Azuriom\Plugin\Shop\Models\Payment;
 use Azuriom\Plugin\Shop\Payment\PaymentMethod;
 use Illuminate\Http\Request;
+use Exception;
 
 class CashfreePaymentMethod extends PaymentMethod
 {
@@ -23,9 +24,51 @@ class CashfreePaymentMethod extends PaymentMethod
      */
     protected $name = 'Cashfree';
 
+    /**
+     * The only currency supported by Cashfree by default
+     *
+     * @var string
+     */
+    protected $supportedCurrency = 'INR';
+
+    /**
+     * Exchange Rate API Key
+     * 
+     * @var string
+     */
+    protected $exchangeRateApiKey;
+
     public function startPayment(Cart $cart, float $amount, string $currency)
     {
+        // Store original currency and amount
+        $originalCurrency = $currency;
+        $originalAmount = $amount;
+        
+        // Check if currency conversion is needed
+        if ($currency !== $this->supportedCurrency) {
+            try {
+                // Convert to INR
+                $conversionResult = $this->convertCurrency($amount, $currency, $this->supportedCurrency);
+                $amount = $conversionResult['converted_amount'];
+                $currency = $this->supportedCurrency;
+                
+                logger()->info("Currency converted from {$originalCurrency} {$originalAmount} to {$currency} {$amount}");
+            } catch (Exception $e) {
+                logger()->error('Currency conversion error: ' . $e->getMessage());
+                return redirect()->route('shop.cart.index')->with('error', 'Currency conversion failed. Please try again later.');
+            }
+        }
+
         $payment = $this->createPayment($cart, $amount, $currency);
+        
+        // Store original currency/amount in payment metadata
+        $payment->update([
+            'metadata' => [
+                'original_currency' => $originalCurrency,
+                'original_amount' => $originalAmount,
+                'conversion_rate' => $originalCurrency !== $currency ? ($amount / $originalAmount) : 1,
+            ]
+        ]);
         
         $api = new CashfreeAPI(
             $this->gateway->data['app-id'], 
@@ -37,7 +80,7 @@ class CashfreePaymentMethod extends PaymentMethod
         $orderData = [
             'order_id' => 'azuriom_' . $payment->id,
             'order_amount' => $amount,
-            'order_currency' => INR,
+            'order_currency' => $currency,
             'customer_details' => [
                 'customer_id' => (string) $user->id,
                 'customer_name' => $user->name,
@@ -66,6 +109,59 @@ class CashfreePaymentMethod extends PaymentMethod
         $paymentSessionId = $responseData['payment_session_id'];
         
         return view('cashfreepayment::payment', compact('cashfreeMode', 'paymentSessionId'));
+    }
+
+    /**
+     * Convert currency using Exchange Rate API
+     * 
+     * @param float $amount Amount to convert
+     * @param string $fromCurrency Currency to convert from
+     * @param string $toCurrency Currency to convert to
+     * @return array Conversion result with converted amount and rate
+     * @throws Exception If conversion fails
+     */
+    protected function convertCurrency(float $amount, string $fromCurrency, string $toCurrency)
+    {
+        // Get API key from gateway data
+        $apiKey = $this->gateway->data['exchange-rate-api-key'] ?? null;
+        
+        if (empty($apiKey)) {
+            throw new Exception('Exchange Rate API key is not configured');
+        }
+        
+        // Fetch exchange rates from the API
+        $req_url = "https://v6.exchangerate-api.com/v6/{$apiKey}/latest/{$fromCurrency}";
+        $response_json = @file_get_contents($req_url);
+        
+        if (false === $response_json) {
+            throw new Exception('Failed to connect to Exchange Rate API');
+        }
+        
+        $response = json_decode($response_json);
+        
+        if (!$response || $response->result !== 'success') {
+            $errorType = $response->{'error-type'} ?? 'unknown-error';
+            throw new Exception("Exchange Rate API error: {$errorType}");
+        }
+        
+        // Check if the target currency is supported
+        if (!isset($response->conversion_rates->{$toCurrency})) {
+            throw new Exception("Target currency {$toCurrency} not supported by Exchange Rate API");
+        }
+        
+        // Get the conversion rate
+        $rate = $response->conversion_rates->{$toCurrency};
+        
+        // Calculate the converted amount and round to 2 decimal places
+        $convertedAmount = round($amount * $rate, 2);
+        
+        return [
+            'original_amount' => $amount,
+            'original_currency' => $fromCurrency,
+            'converted_amount' => $convertedAmount,
+            'converted_currency' => $toCurrency,
+            'rate' => $rate,
+        ];
     }
 
     public function notification(Request $request, ?string $paymentId)
@@ -105,20 +201,15 @@ class CashfreePaymentMethod extends PaymentMethod
 
     public function success(Request $request)
     {
-        $orderId = $request->input('order_id');
         $paymentId = $request->input('payment_id');
         $payment = Payment::findOrFail($paymentId);
         
         // Get the order ID from the payment record
         $orderId = $payment->transaction_id;
-    
+        
         if (!$orderId) {
             return redirect()->route('shop.cart.index')->with('error', trans('shop::messages.payment.error'));
         }
-        
-        // Extract payment ID from order ID
-        $paymentId = str_replace('azuriom_', '', $orderId);
-        $payment = Payment::findOrFail($paymentId);
         
         // Verify payment status with API
         $api = new CashfreeAPI(
@@ -155,6 +246,7 @@ class CashfreePaymentMethod extends PaymentMethod
         return [
             'app-id' => ['required', 'string'],
             'secret-key' => ['required', 'string'],
+            'exchange-rate-api-key' => ['required', 'string'],
         ];
     }
 
