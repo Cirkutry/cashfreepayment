@@ -37,7 +37,7 @@ class CashfreePaymentMethod extends PaymentMethod
         $orderData = [
             'order_id' => 'azuriom_' . $payment->id,
             'order_amount' => $amount,
-            'order_currency' => $currency,
+            'order_currency' => INR,
             'customer_details' => [
                 'customer_id' => (string) $user->id,
                 'customer_name' => $user->name,
