@@ -32,17 +32,17 @@ class CashfreePaymentMethod extends PaymentMethod
             $this->gateway->data['secret-key']
         );
         
-        $customer = $cart->user();
+        $user = auth()->user();
         
         $orderData = [
             'order_id' => 'azuriom_' . $payment->id,
             'order_amount' => $amount,
             'order_currency' => $currency,
             'customer_details' => [
-                'customer_id' => (string) $customer->id,
-                'customer_name' => $customer->name,
-                'customer_email' => $customer->email,
-                'customer_phone' => $customer->phone ?? '9999999999', // Default if not available
+                'customer_id' => (string) $user->id,
+                'customer_name' => $user->name,
+                'customer_email' => $user->email,
+                'customer_phone' => $user->phone ?? '9999999999', // Default if not available
             ],
             'order_meta' => [
                 'return_url' => route('shop.payments.success', ['gateway' => $this->id, 'payment_id' => $payment->id]) . '?order_id={order_id}&order_token={order_token}',
