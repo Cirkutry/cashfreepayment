@@ -252,7 +252,7 @@ class CashfreePaymentMethod extends PaymentMethod
 
     public function image()
     {
-        return asset('plugins/cashfreepayment/img/logo.png');
+        return asset('plugins/cashfreepayment/img/logo.svg');
     }
 
     public function view()
