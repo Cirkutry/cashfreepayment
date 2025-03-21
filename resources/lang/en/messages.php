@@ -21,6 +21,6 @@ return [
         ],
     ],
     'success' => [
-        'payment_completed' => 'Payment completed successfully! Your order is being processed.',
+        'payment_completed' => 'Payment completed successfully!',
     ],
 ];
