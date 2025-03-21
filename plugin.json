@@ -2,9 +2,9 @@
     "id": "cashfreepayment",
     "name": "Cashfree UPI Payment",
     "description": "Add Cashfree UPI payment gateway to your shop",
-    "version": "1.1.0",
+    "version": "1.0",
     "azuriom_api": "1.0.0",
-    "url": "https://github.com/Cirkutry",
+    "url": "https://github.com/Cirkutry/cashfreepayment",
     "authors": [
         "Kre0lidge"
     ],
