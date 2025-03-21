@@ -250,11 +250,11 @@ class CashfreePaymentMethod extends PaymentMethod
         ];
     }
 
-    public function image()
+    public function image(): string
     {
         return asset('plugins/cashfreepayment/img/logo.png');
     }
-
+    
 
     public function view()
     {
