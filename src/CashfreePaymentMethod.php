@@ -55,7 +55,8 @@ class CashfreePaymentMethod extends PaymentMethod
                 logger()->info("Currency converted from {$originalCurrency} {$originalAmount} to {$currency} {$amount}");
             } catch (Exception $e) {
                 logger()->error('Currency conversion error: ' . $e->getMessage());
-                return redirect()->route('shop.cart.index')->with('error', 'Currency conversion failed. Please try again later.');
+                return redirect()->route('shop.cart.index')
+                    ->with('error', trans('cashfreepayment::messages.errors.currency_conversion'));
             }
         }
 
@@ -99,7 +100,8 @@ class CashfreePaymentMethod extends PaymentMethod
         
         if (!isset($responseData['payment_session_id'])) {
             logger()->error('Cashfree payment error: ' . $response);
-            return redirect()->route('shop.cart.index')->with('error', trans('shop::messages.payment.error'));
+            return redirect()->route('shop.cart.index')
+                ->with('error', trans('cashfreepayment::messages.errors.payment_creation'));
         }
         
         $payment->update(['transaction_id' => $responseData['order_id']]);
@@ -126,7 +128,7 @@ class CashfreePaymentMethod extends PaymentMethod
         $apiKey = $this->gateway->data['exchange-rate-api-key'] ?? null;
         
         if (empty($apiKey)) {
-            throw new Exception('Exchange Rate API key is not configured');
+            throw new Exception(trans('cashfreepayment::messages.errors.exchange_rate.api_key_missing'));
         }
         
         // Fetch exchange rates from the API
@@ -134,7 +136,7 @@ class CashfreePaymentMethod extends PaymentMethod
         $response_json = @file_get_contents($req_url);
         
         if (false === $response_json) {
-            throw new Exception('Failed to connect to Exchange Rate API');
+            throw new Exception(trans('cashfreepayment::messages.errors.exchange_rate.connection_failed'));
         }
         
         $response = json_decode($response_json);
@@ -146,7 +148,7 @@ class CashfreePaymentMethod extends PaymentMethod
         
         // Check if the target currency is supported
         if (!isset($response->conversion_rates->{$toCurrency})) {
-            throw new Exception("Target currency {$toCurrency} not supported by Exchange Rate API");
+            throw new Exception(trans('cashfreepayment::messages.errors.exchange_rate.unsupported_currency'));
         }
         
         // Get the conversion rate
@@ -171,7 +173,7 @@ class CashfreePaymentMethod extends PaymentMethod
         $orderId = isset($postData['order_id']) ? $postData['order_id'] : null;
         
         if (!$orderId) {
-            return response('Invalid order data', 400);
+            return response(trans('cashfreepayment::messages.errors.invalid_order'), 400);
         }
         
         // Extract the payment ID from order ID (remove 'azuriom_' prefix)
@@ -188,7 +190,7 @@ class CashfreePaymentMethod extends PaymentMethod
         $orderData = json_decode($orderResponse, true);
         
         if (!isset($orderData['order_status'])) {
-            return response('Failed to verify payment', 400);
+            return response(trans('cashfreepayment::messages.errors.payment_verification'), 400);
         }
         
         if ($orderData['order_status'] === 'PAID') {
@@ -208,7 +210,8 @@ class CashfreePaymentMethod extends PaymentMethod
         $orderId = $payment->transaction_id;
         
         if (!$orderId) {
-            return redirect()->route('shop.cart.index')->with('error', trans('shop::messages.payment.error'));
+            return redirect()->route('shop.cart.index')
+                ->with('error', trans('cashfreepayment::messages.errors.invalid_order'));
         }
         
         // Verify payment status with API
@@ -224,21 +227,25 @@ class CashfreePaymentMethod extends PaymentMethod
             // Payment has been completed
             if (!$payment->isPending()) {
                 // Payment already processed
-                return redirect()->route('shop.home')->with('success', trans('shop::messages.payment.success'));
+                return redirect()->route('shop.home')
+                    ->with('success', trans('cashfreepayment::messages.success.payment_completed'));
             }
             
             // Process the payment
             $this->processPayment($payment, $orderId);
             
-            return redirect()->route('shop.home')->with('success', trans('shop::messages.payment.success'));
+            return redirect()->route('shop.home')
+                ->with('success', trans('cashfreepayment::messages.success.payment_completed'));
         }
         
-        return redirect()->route('shop.home')->with('error', trans('shop::messages.payment.error'));
+        return redirect()->route('shop.home')
+            ->with('error', trans('cashfreepayment::messages.errors.payment_verification'));
     }
 
     public function failure(Request $request)
     {
-        return redirect()->route('shop.home')->with('error', trans('shop::messages.payment.error'));
+        return redirect()->route('shop.home')
+            ->with('error', trans('cashfreepayment::messages.errors.payment_cancelled'));
     }
 
     public function rules()

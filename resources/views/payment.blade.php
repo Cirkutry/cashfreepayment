@@ -5,21 +5,20 @@
 @section('content')
 <div class="container content">
     <h1>{{ trans('shop::messages.payment.title') }}</h1>
-
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-body text-center">
-                    <p class="mb-3">{{ trans('shop::messages.payment.info') }}</p>
-                    
+                    <p class="mb-3">{{ trans('cashfreepayment::messages.payment.info') }}</p>
+                   
                     <div class="d-flex justify-content-center my-4">
                         <div class="spinner-border" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
-                    
-                    <p>{{ trans('shop::messages.payment.processing') }}</p>
-                    
+                   
+                    <p>{{ trans('cashfreepayment::messages.payment.processing') }}</p>
+                   
                     <div id="payment-container">
                         <button id="renderBtn" class="btn btn-primary" style="display: none;">Pay Now</button>
                     </div>

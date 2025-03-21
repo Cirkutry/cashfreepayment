@@ -42,7 +42,6 @@ class CashfreeAPI
         switch ($method) {
             case 'GET':
                 if (!empty($data) && is_string($data)) {
-                    // For fetching specific order
                     curl_setopt($ch, CURLOPT_URL, self::API_BASE_PROD . $endpoint . '/' . $data);
                 } else {
                     curl_setopt($ch, CURLOPT_URL, self::API_BASE_PROD . $endpoint);

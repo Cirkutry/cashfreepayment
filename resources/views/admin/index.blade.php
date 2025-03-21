@@ -21,7 +21,7 @@
 <div class="mb-3">
     <label for="exchange-rate-api-key" class="form-label">Exchange Rate API Key</label>
     <input type="password" class="form-control @error('exchange-rate-api-key') is-invalid @enderror" id="exchange-rate-api-key" name="exchange-rate-api-key" value="{{ old('exchange-rate-api-key', $gateway->data['exchange-rate-api-key'] ?? '') }}" required>
-    <small class="form-text text-muted">Sign up at <a href="https://www.exchangerate-api.com/" target="_blank">exchangerate-api.com</a></small>
+    <small class="form-text text-muted">This is used to convert from $ to INR with live rates. Sign up at <a href="https://www.exchangerate-api.com/" target="_blank">exchangerate-api.com</a></small>
     @error('exchange-rate-api-key')
     <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
     @enderror
