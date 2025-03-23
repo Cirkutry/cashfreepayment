@@ -2,7 +2,7 @@
 return [
     'info' => 'You will find the App ID and Secret Key in your Cashfree merchant dashboard under the API Keys section.',
     'payment' => [
-        'info' => 'Purchase from Mobcraft will now be processed via the Cashfree payment gateway.',
+        'info' => 'Purchase will now be processed via the Cashfree payment gateway.',
         'processing' => 'Please wait as we redirect you to process your payment. Do not close this window.',
     ],
     'errors' => [
